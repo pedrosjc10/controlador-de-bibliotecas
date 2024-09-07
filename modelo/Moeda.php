@@ -158,9 +158,9 @@ class Moeda implements JsonSerializable
     }
 
     // Método setter para IsoMoedas
-    public function setIsoMoeda($IsoMoeda)
+    public function setIsoMoeda($codigoISO)
     {
-        $this->codigoISO = $IsoMoeda;
+        $this->codigoISO = $codigoISO;
 
         return $this;
     }

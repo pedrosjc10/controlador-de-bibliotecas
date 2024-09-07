@@ -6,7 +6,7 @@ class Moeda implements JsonSerializable
     private $idUsuario;
     private $nome;
     private $moedaPref;
-    private $isoMoeda;
+    private $codigoISO;
     private $idTransacao;
 
 
@@ -150,9 +150,9 @@ class Moeda implements JsonSerializable
     }
 
     // Método setter para IsoMoedas
-    public function setIsoMoeda($IsoMoeda)
+    public function setIsoMoeda($codigoISO)
     {
-        $this->isoMoeda = $IsoMoeda;
+        $this->isoMoeda = $codigoISO;
 
         return $this;
     }

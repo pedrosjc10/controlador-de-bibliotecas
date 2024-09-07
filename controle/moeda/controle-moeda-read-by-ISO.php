@@ -8,7 +8,7 @@ $objResposta = new stdClass();
 
 
 $objMoeda = new Moeda();
-$objMoeda->setIsoMoeda($isoMoeda);
+$objMoeda->setIsoMoeda($codigoISO);
 
 
 $vetor = $objMoeda ->readByISO();

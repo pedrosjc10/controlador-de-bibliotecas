@@ -13,7 +13,7 @@ $objResposta = new stdClass();
 // Cria um novo objeto da classe Moeda
 $objMoeda = new Moeda();
 // Define o ISO da moeda a ser atualizado
-$objMoeda->setIsoMoeda($isoMoeda);
+$objMoeda->setIsoMoeda($codigoISO);
 
 $objMoeda->setTaxaConv($objJson->moeda->taxaConv);
 

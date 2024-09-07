@@ -29,16 +29,16 @@ $roteador -> get("/moeda", function(){
     require_once ("controle/moeda/controle-moeda-read-all.php");
 });
 
-$roteador -> get("/moeda/(\d+)", function($isoMoeda){
+$roteador -> get("/moeda/(\d+)", function($codigoISO){
     require_once("controle/moeda/controle-moeda-read-by-ISO.php");
     
 });
 
-$roteador -> put("/moeda/(\d+)", function($isoMoeda){
+$roteador -> put("/moeda/(\d+)", function($codigoISO){
     require_once("controle/moeda/controle-moeda-update.php");
 });
 
-$roteador -> delete("/moeda/(\d+)", function($isoMoeda){
+$roteador -> delete("/moeda/(\d+)", function($codigoISO){
     require_once("controle/moeda/controle-moeda-delete.php");
 });
 $roteador -> post("/moeda", function(){
