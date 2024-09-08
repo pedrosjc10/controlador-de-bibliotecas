@@ -6,7 +6,7 @@
 
         private static $PWD = '';
 
-        private static $DB = 'projeto_api_paw';
+        private static $DB = 'arraso';
 
         private static $PORT = 3306;
 

@@ -1,177 +1,122 @@
 <?php
-require_once ("modelo/Bancos.php");
+require_once ("modelo/Banco.php");
 
 class Moeda implements JsonSerializable
 {
-    private $codigoISO;
+    private $idmoedas;
     private $taxaConv;
-    private $nome;
-    
+    private $codigoISO;
+
+
     public function jsonSerialize()
     {
         $objetoResposta = new stdClass();
-        $objetoResposta->codigoISO = $this->codigoISO;
+        $objetoResposta->idmoedas = $this->idmoedas;
         $objetoResposta->taxaConv = $this->taxaConv;
-        $objetoResposta->nome = $this->nome;
-
+        $objetoResposta->codigoISO = $this->codigoISO;
         return $objetoResposta;
     }
-    
-    // Método para criar um novo moeda no banco de dados
+
     public function create()
     {
-        // Obtém a conexão com o banco de dados
         $connect = Banco::getConnect();
-        $SQL = "INSERT INTO moedas (codigoISO, taxaConv, nome) VALUES (?, ?, ?);";
-        // Prepara a consulta
+        $SQL = "INSERT INTO moedas (taxaConv, codigoISO) VALUES (?, ?);";
         $prepareSQL = $connect->prepare($SQL);
-        // Define os parâmetros da consulta
-        $prepareSQL->bind_param("sds", $this->codigoISO, $this->taxaConv, $this->nome);
-        // Executa a consulta
+        $prepareSQL->bind_param("fs", $this->taxaConv, $this->codigoISO);
         $executou = $prepareSQL->execute();
 
-        $prepararSQL->close();
+        $idmoedas = $connect->insert_id;
+        $this->setIdmoedas($idmoedas);
+
         return $executou;
     }
-    
-    // Método para excluir uma moeda do banco de dados
-    public function delete()
-    {
-        // Obtém a conexão com o banco de dados
-        $connect = Banco::getConnect();
-        // Define a consulta SQL para excluir uma moeda pelo ISO
-        $SQL = "delete from moedas where codigoISO=?;";
-        // Prepara a consulta
-        $prepareSQL = $connect->prepare($SQL);
-        // Define o parâmetro da consulta com o ISO da moeda
-        $prepareSQL->bind_param("s", $this->codigoISO);
-        // Executa a consulta
-        return $prepareSQL->execute();
-    }
 
-    // Método para atualizar os dados de uma moeda no banco de dados
-    public function update()
+    public function isMoeda()
     {
-        // Obtém a conexão com o banco de dados
         $connect = Banco::getConnect();
-        // Define a consulta SQL para atualizar a taxa de conversão da moeda pelo ISO
-        $SQL = "update moedas set taxaConv = ? and set nome = ? where codigoISO=?";
-        // Prepara a consulta
+        $SQL = "SELECT COUNT(*) AS qtd FROM moedas WHERE codigoISO = ?;";
         $prepareSQL = $connect->prepare($SQL);
-        // Define os parâmetros da consulta com o nova taxa, nome e o ISO da moeda
-        $prepareSQL->bind_param("dss", $this->taxaConv, $this->nome, $this->codigoISO);
-        // Executa a consulta
-        $executou = $prepareSQL->execute();
-        // Retorna se a operação foi executada com sucesso
-        return $executou;
-    }
-    
-    // Método para verificar se uma moeda já existe no banco de dados
-    public function isISO()
-    {
-        // Obtém a conexão com o banco de dados
-        $connect = Banco::getConnect();
-        // Define a consulta SQL para contar quantas Moedas possuem o mesmo ISO
-        $SQL = "SELECT COUNT(*) AS qtd FROM moedas WHERE codigoISO =?;";
-        // Prepara a consulta
-        $prepareSQL = $connect->prepare($SQL);
-        // Define o parâmetro da consulta com o ISO da moeda
         $prepareSQL->bind_param("s", $this->codigoISO);
-        // Executa a consulta
         $executou = $prepareSQL->execute();
-
-        // Obtém o resultado da consulta
         $matrizTuplas = $prepareSQL->get_result();
-
-        // Extrai o objeto da tupla
         $objTupla = $matrizTuplas->fetch_object();
-        // Retorna se a quantidade de moedas encontradas é maior que zero
         return $objTupla->qtd > 0;
-
     }
-    
-    // Método para ler todos as Moedas do banco de dados
+
     public function readAll()
     {
-        // Obtém a conexão com o banco de dados
         $connect = Banco::getConnect();
-        // Define a consulta SQL para selecionar todos as Moedas ordenados por ISO
-        $SQL = "Select * from moedas order by codigoISO";
-        // Prepara a consulta
+        $SQL = "Select * from moeda order by codigoISO";
         $prepareSQL = $connect->prepare($SQL);
-        // Executa a consulta
         $executou = $prepareSQL->execute();
-        // Obtém o resultado da consulta
         $matrizTuplas = $prepareSQL->get_result();
-        // Inicializa um vetor para armazenar as Moedas
         $vetorMoedas = array();
         $i = 0;
-        // Itera sobre as tuplas do resultado
         while ($tupla = $matrizTuplas->fetch_object()) {
-            // Cria uma nova instância de moeda para cada tupla encontrada
             $vetorMoedas[$i] = new Moeda();
-            // Define o ISO e o nome da moeda na instância
-            $vetorMoedas[$i]->setIsoMoeda($tupla->codigoISO);
+            $vetorMoedas[$i]->setIdmoedas($tupla->idmoedas);
             $vetorMoedas[$i]->setTaxaConv($tupla->taxaConv);
-            $vetorMoedas[$i]->setNome($tupla->nome);
+            $vetorMoedas[$i]->setCodigoISO($tupla->codigoISO);
             $i++;
         }
-        // Retorna o vetor com as Moedas encontrados
         return $vetorMoedas;
     }
+
+    public function readByID()
+    {
+        $connect = Banco::getConnect();
+        $SQL = "SELECT * FROM moedas WHERE idmoedas=?;";
+        $prepareSQL = $connect->prepare($SQL);
+        $prepareSQL->bind_param("i", $this->idmoedas);
+        $executou = $prepareSQL->execute();
+        $matrizTuplas = $prepareSQL->get_result();
+        $vetorMoedas = array();
+        $i = 0;
+        while ($tupla = $matrizTuplas->fetch_object()) {
+            $vetorMoedas[$i] = new Moeda();
+            $vetorMoedas[$i]->setIdmoedas($tupla->idCargo);
+            $vetorMoedas[$i]->setTaxaConv($tupla->nomeCargo);
+            $vetorMoedas[$i]->setCodigoISO($tupla->codigoISO);
+            $i++;
+        }
+        return $vetorMoedas;
+    }
+
     
-    // Método para ler uma moeda do banco de dados com base no ISO
-    public function readByISO()
+
+    /**
+     * Get the value of idmoedas
+     */ 
+    public function getIdmoedas()
     {
-        // Obtém a conexão com o banco de dados
-        $connect = Banco::getConnect();
-        // Define a consulta SQL para selecionar uma moeda pelo ISO
-        $SQL = "SELECT * FROM moedas WHERE codigoISO=?;";
-        // Prepara a consulta
-        $prepareSQL = $connect->prepare($SQL);
-        // Define o parâmetro da consulta com o ISO da moeda
-        $prepareSQL->bind_param("s", $this->codigoISO);
-        // Executa a consulta
-        $executou = $prepareSQL->execute();
-        // Obtém o resultado da consulta
-        $matrizTuplas = $prepareSQL->get_result();
-        // Inicializa um vetor para armazenar as Moedas
-        $vetorMoedas = array();
-        $i = 0;
-        // Itera sobre as tuplas do resultado
-        while ($tupla = $matrizTuplas->fetch_object()) {
-            // Cria uma nova instância de Moeda para cada tupla encontrada
-            $vetorMoedas[$i] = new Moeda();
-            // Define o ISO e o nome da moeda na instância
-            $vetorMoedas[$i]->setIsoMoeda($tupla->codigoISO);
-            $vetorMoedas[$i]->setTaxaConv($tupla->taxaConv);
-            $vetorMoedas[$i]->setNome($tupla->nome);
-            $i++;
-        }
-        // Retorna o vetor com as Moedas encontrados
-        return $vetorMoedas;
+        return $this->idmoedas;
     }
 
-    public function getIsoMoeda()
+    /**
+     * Set the value of idmoedas
+     *
+     * @return  self
+     */ 
+    public function setIdmoedas($idmoedas)
     {
-        return $this->codigoISO;
-    }
-
-    // Método setter para IsoMoedas
-    public function setIsoMoeda($codigoISO)
-    {
-        $this->codigoISO = $codigoISO;
+        $this->idmoedas = $idmoedas;
 
         return $this;
     }
 
-    // Método getter para taxa de conversão
+    /**
+     * Get the value of taxaConv
+     */ 
     public function getTaxaConv()
     {
         return $this->taxaConv;
     }
 
-    // Método setter para taxa de conversão
+    /**
+     * Set the value of taxaConv
+     *
+     * @return  self
+     */ 
     public function setTaxaConv($taxaConv)
     {
         $this->taxaConv = $taxaConv;
@@ -179,19 +124,23 @@ class Moeda implements JsonSerializable
         return $this;
     }
 
-    // Método getter para nome
-    public function getNome()
+    /**
+     * Get the value of codigoISO
+     */ 
+    public function getCodigoISO()
     {
-        return $this->nome;
+        return $this->codigoISO;
     }
 
-    // Método setter para taxa de conversão
-    public function setNome($nome)
+    /**
+     * Set the value of codigoISO
+     *
+     * @return  self
+     */ 
+    public function setCodigoISO($codigoISO)
     {
-        $this->nome = $nome;
+        $this->codigoISO = $codigoISO;
 
         return $this;
     }
 }
-
-?>

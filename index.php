@@ -8,7 +8,7 @@ $roteador -> get("/usuarios", function(){
 });
 
 $roteador -> get("/usuarios/(\d+)", function($idUsuario){
-    require_once("controle/usuarios/controle-usuarios-read-by-ISO.php");
+    require_once("controle/moeda/controle-moeda-read-by-ISO.php");
     
 });
 
@@ -29,16 +29,16 @@ $roteador -> get("/moeda", function(){
     require_once ("controle/moeda/controle-moeda-read-all.php");
 });
 
-$roteador -> get("/moeda/(\d+)", function($codigoISO){
+$roteador -> get("/moeda/(\d+)", function($idMoeda){
     require_once("controle/moeda/controle-moeda-read-by-ISO.php");
     
 });
 
-$roteador -> put("/moeda/(\d+)", function($codigoISO){
+$roteador -> put("/moeda/(\d+)", function($idMoeda){
     require_once("controle/moeda/controle-moeda-update.php");
 });
 
-$roteador -> delete("/moeda/(\d+)", function($codigoISO){
+$roteador -> delete("/moeda/(\d+)", function($idMoeda){
     require_once("controle/moeda/controle-moeda-delete.php");
 });
 $roteador -> post("/moeda", function(){
@@ -51,16 +51,16 @@ $roteador -> get("/transações", function(){
     require_once ("controle/transações/controle-transações-read-all.php");
 });
 
-$roteador -> get("/transações/(\d+)", function($idTransação){
-    require_once("controle/transações/controle-transações-read-by-ISO.php");
+$roteador -> get("/transações/(\d+)", function($idtrandação){
+    require_once("controle/transações/controle-transações-read-by-id.php");
     
 });
 
-$roteador -> put("/transações/(\d+)", function($idTransação){
+$roteador -> put("/transações/(\d+)", function($idtransação){
     require_once("controle/transações/controle-transações-update.php");
 });
 
-$roteador -> delete("/transações/(\d+)", function($idTransação){
+$roteador -> delete("/transações/(\d+)", function($idtransação){
     require_once("controle/transações/controle-transações-delete.php");
 });
 $roteador -> post("/transações", function(){
@@ -68,4 +68,3 @@ $roteador -> post("/transações", function(){
 });
 
 $roteador->run();
-?>

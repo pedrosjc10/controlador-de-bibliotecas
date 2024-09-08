@@ -1,161 +1,130 @@
 <?php
-require_once ("modelo/Bancos.php");
+require_once("modelo/Banco.php");
 
 class Transacao implements JsonSerializable
 {
-    private $idTransacao;
+    private $idtransacoes;
     private $moedaOrig;
     private $qtdMoeda;
     private $qtdConv;
-   
+
     public function jsonSerialize()
     {
         $objetoResposta = new stdClass();
-        $objetoResposta->idTransacao = $this->idTransacao;
+        $objetoResposta->idtransacoes = $this->idtransacoes;
         $objetoResposta->moedaOrig = $this->moedaOrig;
         $objetoResposta->qtdMoeda = $this->qtdMoeda;
         $objetoResposta->qtdConv = $this->qtdConv;
-
         return $objetoResposta;
     }
-    
-    // Método para criar um nova transação no banco de dados
+
     public function create()
     {
-        // Obtém a conexão com o banco de dados
         $connect = Banco::getConnect();
-        $SQL = "INSERT INTO transações (moedaOrig, qtdmoedaOrig, qtdConv) VALUES (?, ?, ?, ?);";
-        // Prepara a consulta
+        $SQL = "INSERT INTO transacoes (moedaOrig, qtdMoeda, qtdConv) VALUES (?, ?, ?);";
         $prepareSQL = $connect->prepare($SQL);
-        // Define os parâmetros da consulta
-        $prepareSQL->bind_param("ddd", $this->moedaOrig, $this->qtdMoeda, $this->qtdConv);
-        // Executa a consulta
+        $prepareSQL->bind_param("sdd", $this->moedaOrig, $this->qtdMoeda, $this->qtdConv);
         $executou = $prepareSQL->execute();
-
-        $idTransacao = $conexao->insert_id;
-        // Define o ID do funcionário na instância atual da classe
-        $this->setIdTransacao($idTransacao);
-        // Fecha a consulta
-        $prepararSQL->close();
+        $idTransacao = $connect->insert_id;
+        $this->setIdtransacoes($idTransacao);
+        $prepareSQL->close();
         return $executou;
     }
-    
-    // Método para excluir uma transação do banco de dados
+
     public function delete()
     {
-        // Obtém a conexão com o banco de dados
         $connect = Banco::getConnect();
-        // Define a consulta SQL para excluir uma transação pelo id
-        $SQL = "delete from transações where idTransação=?;";
-        // Prepara a consulta
+        $SQL = "DELETE FROM transacoes WHERE idtransacoes = ?;";
         $prepareSQL = $connect->prepare($SQL);
-        // Define o parâmetro da consulta com o id da transação
-        $prepareSQL->bind_param("i", $this->idTransacao);
-        // Executa a consulta
-        return $prepareSQL->execute();
-    }
-
-    // Método para atualizar os dados de uma transação no banco de dados
-    public function update()
-    {
-        // Obtém a conexão com o banco de dados
-        $connect = Banco::getConnect();
-        // Define a consulta SQL para atualizar a transação pelo id
-        $SQL = "update moedas set moedaOrig = ?, qtdmoedaOrig = ?, qtdConv = ? where idTransação=?";
-        // Prepara a consulta
-        $prepareSQL = $connect->prepare($SQL);
-        // Define os parâmetros da consulta com a transação
-        $prepareSQL->bind_param("dddi", $this->moedaOrig, $this->qtdMoeda, $this->qtdConv, $this->idTransacao);
-        // Executa a consulta
+        $prepareSQL->bind_param("i", $this->idtransacoes);
         $executou = $prepareSQL->execute();
-        // Retorna se a operação foi executada com sucesso
+        $prepareSQL->close();
         return $executou;
     }
-        
-    // Método para ler todos as transações do banco de dados
+
+    public function update()
+    {
+        $connect = Banco::getConnect();
+        $SQL = "UPDATE transacoes SET moedaOrig = ?, qtdMoeda = ?, qtdConv = ? WHERE idtransacoes = ?";
+        $prepareSQL = $connect->prepare($SQL);
+        $prepareSQL->bind_param("sddi", $this->moedaOrig, $this->qtdMoeda, $this->qtdConv, $this->idtransacoes);
+        $executou = $prepareSQL->execute();
+        $prepareSQL->close();
+        return $executou;
+    }
+
     public function readAll()
     {
-        // Obtém a conexão com o banco de dados
         $connect = Banco::getConnect();
-        // Define a consulta SQL para selecionar todos as Transacoes ordenados por id
-        $SQL = "Select * from transações order by idTransações";
-        // Prepara a consulta
+        $SQL = "SELECT * FROM transacoes ORDER BY idtransacoes";
         $prepareSQL = $connect->prepare($SQL);
-        // Executa a consulta
-        $executou = $prepareSQL->execute();
-        // Obtém o resultado da consulta
+        $prepareSQL->execute();
         $matrizTuplas = $prepareSQL->get_result();
-        // Inicializa um vetor para armazenar as Transacoes
-        $vetorTransacoes = array();
-        $i = 0;
-        // Itera sobre as tuplas do resultado
+        $transacoes = [];
         while ($tupla = $matrizTuplas->fetch_object()) {
-            // Cria uma nova instância de transação para cada tupla encontrada
-            $vetorTransacoes[$i] = new Transacao();
-            // Define propriedades da transação na instância
-            $vetorTransacoes[$i]->setIdTransacao($tupla->idTransacoes);
-            $vetorTransacoes[$i]->setMoedaOrig($tupla->moedaOrig);
-            $vetorTransacoes[$i]->setQtdMoedaOrig($tupla->qtdMoedaOrig);
-            $vetorTransacoes[$i]->setQtdConv($tupla->qtdConv);
-            $i++;
+            $transacao = new Transacao();
+            $transacao->setIdtransacoes($tupla->idtransacoes);
+            $transacao->setMoedaOrig($tupla->moedaOrig);
+            $transacao->setQtdMoeda($tupla->qtdMoeda);
+            $transacao->setQtdConv($tupla->qtdConv);
+            $transacoes[] = $transacao;
         }
-        // Retorna o vetor com as Transacoes encontrados
-        return $vetorTransacoes;
+        return $transacoes;
     }
-    
-    // Método para ler uma transação do banco de dados com base no Id
+
     public function readById()
     {
-        // Obtém a conexão com o banco de dados
         $connect = Banco::getConnect();
-        // Define a consulta SQL para selecionar uma moeda pelo Id
-        $SQL = "SELECT * FROM transações WHERE idTransação=?;";
-        // Prepara a consulta
+        $SQL = "SELECT * FROM transacoes WHERE idtransacoes = ?;";
         $prepareSQL = $connect->prepare($SQL);
-        // Define o parâmetro da consulta com o Id da moeda
-        $prepareSQL->bind_param("i", $this->idTransacao);
-        // Executa a consulta
-        $executou = $prepareSQL->execute();
-        // Obtém o resultado da consulta
+        $prepareSQL->bind_param("i", $this->idtransacoes);
+        $prepareSQL->execute();
         $matrizTuplas = $prepareSQL->get_result();
-        // Inicializa um vetor para armazenar as Transações
-        $vetorTransacoes = array();
-        $i = 0;
-        // Itera sobre as tuplas do resultado
-        while ($tupla = $matrizTuplas->fetch_object()) {
-            // Cria uma nova instância de Transação para cada tupla encontrada
-            $vetorTransacoes[$i] = new Transacao();
-            // Define o Id e o nome da moeda na instância
-            $vetorTransacoes[$i]->setIdTransacao($tupla->idTransacoes);
-            $vetorTransacoes[$i]->setMoedaOrig($tupla->moedaOrig);
-            $vetorTransacoes[$i]->setQtdMoedaOrig($tupla->qtdMoedaOrig);
-            $vetorTransacoes[$i]->setQtdConv($tupla->qtdConv);
-            $i++;
+        if ($tupla = $matrizTuplas->fetch_object()) {
+            $this->setIdtransacoes($tupla->idtransacoes);
+            $this->setMoedaOrig($tupla->moedaOrig);
+            $this->setQtdMoeda($tupla->qtdMoeda);
+            $this->setQtdConv($tupla->qtdConv);
         }
-        // Retorna o vetor com as Transacoes encontradas
-        return $vetorTransacoes;
+        return $this;
     }
 
-    public function getIdTransacao()
+    // Getters e Setters
+    // ...
+
+    /**
+     * Get the value of idtransacoes
+     */ 
+    public function getIdtransacoes()
     {
-        return $this->idTransacao;
+        return $this->idtransacoes;
     }
 
-    // Método setter para IdTransacao
-    public function setIdTransacao($idTransacao)
+    /**
+     * Set the value of idtransacoes
+     *
+     * @return  self
+     */ 
+    public function setIdtransacoes($idtransacoes)
     {
-        $this->idTransacao = $idTransacao;
+        $this->idtransacoes = $idtransacoes;
 
         return $this;
     }
 
-    // Método getter para taxa de conversão
+    /**
+     * Get the value of moedaOrig
+     */ 
     public function getMoedaOrig()
     {
         return $this->moedaOrig;
     }
 
-    // Método setter para taxa de conversão
+    /**
+     * Set the value of moedaOrig
+     *
+     * @return  self
+     */ 
     public function setMoedaOrig($moedaOrig)
     {
         $this->moedaOrig = $moedaOrig;
@@ -163,27 +132,39 @@ class Transacao implements JsonSerializable
         return $this;
     }
 
-    // Método getter para taxa de conversão
-    public function getQtdMoedaOrig()
+    /**
+     * Get the value of qtdMoeda
+     */ 
+    public function getQtdMoeda()
     {
-        return $this->qtdMoedaOrig;
+        return $this->qtdMoeda;
     }
 
-    // Método setter para taxa de conversão
-    public function setQtdMoedaOrig($qtdMoedaOrig)
+    /**
+     * Set the value of qtdMoeda
+     *
+     * @return  self
+     */ 
+    public function setQtdMoeda($qtdMoeda)
     {
-        $this->qtdMoedaOrig = $qtdMoedaOrig;
+        $this->qtdMoeda = $qtdMoeda;
 
         return $this;
     }
 
-    // Método getter para taxa de conversão
+    /**
+     * Get the value of qtdConv
+     */ 
     public function getQtdConv()
     {
         return $this->qtdConv;
     }
 
-    // Método setter para taxa de conversão
+    /**
+     * Set the value of qtdConv
+     *
+     * @return  self
+     */ 
     public function setQtdConv($qtdConv)
     {
         $this->qtdConv = $qtdConv;
@@ -191,5 +172,3 @@ class Transacao implements JsonSerializable
         return $this;
     }
 }
-
-?>

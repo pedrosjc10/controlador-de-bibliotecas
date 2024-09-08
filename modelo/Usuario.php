@@ -1,200 +1,251 @@
 <?php
-require_once ("modelo/Bancos.php");
+require_once ("modelo/Banco.php");
+require_once ("modelo/Moeda.php");
+require_once ("modelo/Transacao.php");
 
-class Moeda implements JsonSerializable
+class Usuario implements JsonSerializable
 {
-    private $idUsuario;
+    private $idusuario;
     private $nome;
     private $moedaPref;
-    private $codigoISO;
-    private $idTransacao;
+    private $senha;
+    private $email;
+    private $transacoes_idtransacoes;
+    private $moedas_idmoedas;
 
+    public function __construct()
+    {
+        $this->moedaPref = new Moeda();
+        $this->transacao = new Transacao();
+    }
 
-
-    
     public function jsonSerialize()
     {
-        $objetoResposta = new stdClass();
-        $objetoResposta->idUsuario = $this->idUsuario;
-        $objetoResposta->moedaPref = $this->moedaPref;
-        $objetoResposta->isoMoeda = $this->isoMoeda;
-        $objetoResposta->nome = $this->nome;
-        $objetoResposta->idTansacao = $this->idTansacao;
-
-
-        return $objetoResposta;
+        $respostaPadrao = new stdClass();
+        $respostaPadrao->idusuario = $this->idusuario;
+        $respostaPadrao->nome = $this->nome;
+        $respostaPadrao->moedaPref = $this->moedaPref;
+        $respostaPadrao->senha = $this->senha;
+        $respostaPadrao->email = $this->email;
+        $respostaPadrao->transacoes_idtransacoes = $this->transacoes_idtransacoes;
+        $respostaPadrao->moedas_idmoedas = $this->moedas_idmoedas;
+        return $respostaPadrao;
     }
-    
-    // Método para criar um novo moeda no banco de dados
+
     public function create()
     {
-        // Obtém a conexão com o banco de dados
-        $connect = Banco::getConnect();
-        $SQL = "INSERT INTO usuarios ( moedaPref, nome, moedas_codigoISO, transações_idtransação) VALUES (?, ?, ?, ?, ?);";
-        // Prepara a consulta
-        $prepareSQL = $connect->prepare($SQL);
-        // Define os parâmetros da consulta
-        $prepareSQL->bind_param("sssi", $this->moedaPref, $this->nome, $this->isoMoeda, $this->idTransacao);
-        // Executa a consulta
-        $executou = $prepareSQL->execute();
-
-        $idUsuario = $conexao->insert_id;
-        // Define o ID do funcionário na instância atual da classe
-        $this->setIdUsuario($idUsuario)        // Fecha a consulta
+        $conexao = Banco::getConnect();
+        $SQL = "INSERT INTO usuario (nome, email, senha, moedas_idmoedas) VALUES (?, ?, ?, ?)";
+        $prepararSQL = $conexao->prepare($SQL);
+        $prepararSQL->bind_param("sssi", $this->nome, $this->email, $this->senha, $this->moedas_idmoedas);
+        $executar = $prepararSQL->execute();
+        $idCadastrado = $conexao->insert_id;
+        $this->setIdusuario($idCadastrado);
         $prepararSQL->close();
-        return $executou;
-    }
-    
-    // Método para excluir uma moeda do banco de dados
-    public function delete()
-    {
-        // Obtém a conexão com o banco de dados
-        $connect = Banco::getConnect();
-        // Define a consulta SQL para excluir uma moeda pelo ISO
-        $SQL = "delete from usuarios where idusuario=?;";
-        // Prepara a consulta
-        $prepareSQL = $connect->prepare($SQL);
-        // Define o parâmetro da consulta com o ISO da moeda
-        $prepareSQL->bind_param("i", $this->idUsuario);
-        // Executa a consulta
-        return $prepareSQL->execute();
+        return $executar;
     }
 
-    // Método para atualizar os dados de uma moeda no banco de dados
     public function update()
     {
-        // Obtém a conexão com o banco de dados
-        $connect = Banco::getConnect();
-        // Define a consulta SQL para atualizar o ISO da moeda pelo ISO
-        $SQL = "update usuarios set moedaPref = ?, nome = ?, moedas_codigoISO = ?, transações_idtransação = ? where idusuario=?";
-        // Prepara a consulta
-        $prepareSQL = $connect->prepare($SQL);
-        // Define os parâmetros da consulta com o novo Iso da moeda e o ISO da moeda
-        $prepareSQL->bind_param("sssii", $this->moedaPref, $this->nome, $this->isoMoeda, $this->idTransacao, $this->isUsuario);
-        // Executa a consulta
-        $executou = $prepareSQL->execute();
-        // Retorna se a operação foi executada com sucesso
-        return $executou;
+        $conexao = Banco::getConnect();
+        $SQL = "UPDATE usuario SET nome = ?, email = ?, senha = ?, moedas_idmoedas = ? WHERE idusuario = ?";
+        $prepararSQL = $conexao->prepare($SQL);
+        $prepararSQL->bind_param("sssii", $this->nome, $this->email, $this->senha, $this->moedas_idmoedas, $this->idusuario);
+        $executar = $prepararSQL->execute();
+        $prepararSQL->close();
+        return $executar;
     }
-    
-    
-    // Método para ler todos as Moedas do banco de dados
-    public function readAll()
+
+    public function delete()
     {
-        // Obtém a conexão com o banco de dados
-        $connect = Banco::getConnect();
-        // Define a consulta SQL para selecionar todos as Moedas ordenados por ISO
-        $SQL = "Select * from usuarios order by idusuario";
-        // Prepara a consulta
-        $prepareSQL = $connect->prepare($SQL);
-        // Executa a consulta
-        $executou = $prepareSQL->execute();
-        // Obtém o resultado da consulta
-        $matrizTuplas = $prepareSQL->get_result();
-        // Inicializa um vetor para armazenar as Moedas
-        $vetorUsuarios = array();
-        $i = 0;
-        // Itera sobre as tuplas do resultado
-        while ($tupla = $matrizTuplas->fetch_object()) {
-            // Cria uma nova instância de moeda para cada tupla encontrada
-            $vetorUsuarios[$i] = new Usuario();
-            // Define o ISO e o nome da moeda na instância
-            $vetorUsuarios[$i]->setIdUsuario($tupla->idUsuario);
-            $vetorUsuarios[$i]->setMoedaPref($tupla->moedaPref);
-            $vetorUsuarios[$i]->setNome($tupla->nome);
-            $vetorUsuarios[$i]->setIsoMoeda($tupla->isoMoeda);
-            $vetorUsuarios[$i]->setIdTransacao($tupla->idTransacao);
-            $i++;
-        }
-        // Retorna o vetor com as Usuarios$vetorUsuarios encontrados
-        return $vetorUsuarios;
+        $conexao = Banco::getConnect();
+        $SQL = "DELETE FROM usuario WHERE idusuario = ?";
+        $prepararSQL = $conexao->prepare($SQL);
+        $prepararSQL->bind_param("i", $this->idusuario);
+        $executar = $prepararSQL->execute();
+        $prepararSQL->close();
+        return $executar;
     }
-    
-    // Método para ler uma moeda do banco de dados com base no ISO
+
     public function readById()
     {
-        // Obtém a conexão com o banco de dados
-        $connect = Banco::getConnect();
-        // Define a consulta SQL para selecionar uma moeda pelo ISO
-        $SQL = "SELECT * FROM usuarios WHERE idusuario=?;";
-        // Prepara a consulta
-        $prepareSQL = $connect->prepare($SQL);
-        // Define o parâmetro da consulta com o ISO da moeda
-        $prepareSQL->bind_param("i", $this->idUsuario);
-        // Executa a consulta
-        $executou = $prepareSQL->execute();
-        // Obtém o resultado da consulta
-        $matrizTuplas = $prepareSQL->get_result();
-        // Inicializa um vetor para armazenar as Moedas
-        $vetorUsuarios = array();
-        $i = 0;
-        // Itera sobre as tuplas do resultado
-        while ($tupla = $matrizTuplas->fetch_object()) {
-            // Cria uma nova instância de moeda para cada tupla encontrada
-            $vetorUsuarios[$i] = new Usuario();
-            // Define o ISO e o nome da moeda na instância
-            $vetorUsuarios[$i]->setIdUsuario($tupla->idUsuario);
-            $vetorUsuarios[$i]->setMoedaPref($tupla->moedaPref);
-            $vetorUsuarios[$i]->setNome($tupla->nome);
-            $vetorUsuarios[$i]->setIsoMoeda($tupla->isoMoeda);
-            $vetorUsuarios[$i]->setIdTransacao($tupla->idTransacao);
-            $i++;
+        $conexao = Banco::getConnect();
+        $SQL = "SELECT * FROM usuario WHERE idusuario = ?";
+        $prepararSQL = $conexao->prepare($SQL);
+        $prepararSQL->bind_param("i", $this->idusuario);
+        $prepararSQL->execute();
+        $matrizTuplas = $prepararSQL->get_result();
+        if ($tupla = $matrizTuplas->fetch_object()) {
+            $this->setIdusuario($tupla->idusuario);
+            $this->setNome($tupla->nome);
+            $this->setEmail($tupla->email);
+            $this->setSenha($tupla->senha);
+            $this->setMoedas_idmoedas($tupla->moedas_idmoedas);
         }
-        // Retorna o vetor com as Usuarios$vetorUsuarios encontrados
-        return $vetorUsuarios;
+        return $this;
     }
 
-    public function getIsoMoeda()
+    public function readAll()
     {
-        return $this->isoMoeda;
+        $conexao = Banco::getConnect();
+        $SQL = "SELECT * FROM usuario ORDER BY nome";
+        $prepararSQL = $conexao->prepare($SQL);
+        $prepararSQL->execute();
+        $matrizTuplas = $prepararSQL->get_result();
+        $usuarios = [];
+        while ($tupla = $matrizTuplas->fetch_object()) {
+            $usuario = new Usuario();
+            $usuario->setIdusuario($tupla->idusuario);
+            $usuario->setNome($tupla->nome);
+            $usuario->setEmail($tupla->email);
+            $usuario->setSenha($tupla->senha);
+            $usuario->setMoedas_idmoedas($tupla->moedas_idmoedas);
+            $usuarios[] = $usuario;
+        }
+        return $usuarios;
     }
 
-    // Método setter para IsoMoedas
-    public function setIsoMoeda($codigoISO)
+    // Getters e Setters
+    // ...
+
+
+    /**
+     * Get the value of idusuario
+     */ 
+    public function getIdusuario()
     {
-        $this->isoMoeda = $codigoISO;
+        return $this->idusuario;
+    }
+
+    /**
+     * Set the value of idusuario
+     *
+     * @return  self
+     */ 
+    public function setIdusuario($idusuario)
+    {
+        $this->idusuario = $idusuario;
 
         return $this;
     }
 
-    // Método getter para taxa de conversão
-    public function getIdUsuario()
+    /**
+     * Get the value of nome
+     */ 
+    public function getNome()
     {
-        return $this->idUsuario;
+        return $this->nome;
     }
 
-    // Método setter para taxa de conversão
-    public function setIdUsuario($idUsuario)
+    /**
+     * Set the value of nome
+     *
+     * @return  self
+     */ 
+    public function setNome($nome)
     {
-        $this->idUsuario = $idUsuario;
+        $this->nome = $nome;
 
         return $this;
     }
 
+    /**
+     * Get the value of moedaPref
+     */ 
     public function getMoedaPref()
     {
         return $this->moedaPref;
     }
 
-    // Método setter para taxa de conversão
+    /**
+     * Set the value of moedaPref
+     *
+     * @return  self
+     */ 
     public function setMoedaPref($moedaPref)
     {
         $this->moedaPref = $moedaPref;
 
         return $this;
     }
-    public function getIdTransacao()
+
+    /**
+     * Get the value of senha
+     */ 
+    public function getSenha()
     {
-        return $this->idTransacao;
+        return $this->senha;
     }
 
-    // Método setter para IdTransacao
-    public function setIdTransacao($idTransacao)
+    /**
+     * Set the value of senha
+     *
+     * @return  self
+     */ 
+    public function setSenha($senha)
     {
-        $this->idTransacao = $idTransacao;
+        $this->senha = $senha;
+
+        return $this;
+    }
+
+    /**
+     * Get the value of email
+     */ 
+    public function getEmail()
+    {
+        return $this->email;
+    }
+
+    /**
+     * Set the value of email
+     *
+     * @return  self
+     */ 
+    public function setEmail($email)
+    {
+        $this->email = $email;
+
+        return $this;
+    }
+
+    /**
+     * Get the value of transacoes_idtransacoes
+     */ 
+    public function getTransacoes_idtransacoes()
+    {
+        return $this->transacoes_idtransacoes;
+    }
+
+    /**
+     * Set the value of transacoes_idtransacoes
+     *
+     * @return  self
+     */ 
+    public function setTransacoes_idtransacoes($transacoes_idtransacoes)
+    {
+        $this->transacoes_idtransacoes = $transacoes_idtransacoes;
+
+        return $this;
+    }
+
+    /**
+     * Get the value of moedas_idmoedas
+     */ 
+    public function getMoedas_idmoedas()
+    {
+        return $this->moedas_idmoedas;
+    }
+
+    /**
+     * Set the value of moedas_idmoedas
+     *
+     * @return  self
+     */ 
+    public function setMoedas_idmoedas($moedas_idmoedas)
+    {
+        $this->moedas_idmoedas = $moedas_idmoedas;
 
         return $this;
     }
 }
-
-?>

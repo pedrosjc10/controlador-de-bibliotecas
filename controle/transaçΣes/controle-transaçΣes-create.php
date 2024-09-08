@@ -9,19 +9,26 @@ $objJson = json_decode($textoRecebido) or die('{"msg":"formato incorreto"}');
 $objResposta = new stdClass();
 $objTransacao = new Transacao();
 $objTransacao->setMoedaOrig($objJson->transacao->moedaOrig);
-$objTransacao->setQtdMoedaOrig($objJson->transacao->qtdMoeda);
+$objTransacao->setQtdMoeda($objJson->transacao->qtdMoeda);
 
 $objMoeda = new Moeda();
-// Define o ID do moeda a ser lido
-$objMoeda->setIsoMoeda($objTransacao->getMoedaOrig());
+$objMoeda->setIdMoeda($objTransacao->getMoedaOrig());
 
 // Obtém o moeda específico do banco de dados com base no ID fornecido
-$vetor = $objMoeda ->readByISO();
+$vetor = $objMoeda->readByISO();
+if (empty($vetor)) {
+    $objResposta->cod = 4;
+    $objResposta->status = false;
+    $objResposta->msg = "Moeda não encontrada";
+    header("Content-Type: application/json");
+    header("HTTP/1.1 404 Not Found");
+    echo json_encode($objResposta);
+    exit();
+}
 $moeda = $vetor[0];
 
-$qtdConv = $moeda->taxaConv * $objTransacao->qtdMoeda;
-
-$objTransacao -> setQtdConv($qtdConv);
+$qtdConv = $moeda->getTaxaConv() * $objTransacao->getQtdMoeda();
+$objTransacao->setQtdConv($qtdConv);
 
 if (empty($objTransacao->getMoedaOrig())) {
     $objResposta->cod = 2;
@@ -33,12 +40,7 @@ else if (empty($objTransacao->getQtdMoeda())) {
     $objResposta->status = false;
     $objResposta->msg = "qtdMoeda não pode ser vazio";
 } 
-else if (strlen($objTransacao->getIdTransacao()) !== 3) {
-    $objResposta->cod = 3;
-    $objResposta->status = false;
-    $objResposta->msg = "o ISO deve conter 3 caracteres";
-}
-else{
+else {
     if ($objTransacao->create() == true) {
         $objResposta->cod = 5;
         $objResposta->status = true;
@@ -55,10 +57,9 @@ else{
 header("Content-Type: application/json");
 
 if ($objResposta->status == true) {
-    header("HTTP/1.1 201");
+    header("HTTP/1.1 201 Created");
 } else {
-    header("HTTP/1.1 200");
+    header("HTTP/1.1 400 Bad Request");
 }
 
 echo json_encode($objResposta);
-?>
