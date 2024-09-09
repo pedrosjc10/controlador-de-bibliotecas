@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cadastro de Escola</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: Arial, sans-serif;
+            background-color: #1a1a1a;
+            color: #e0e0e0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+
+        .container {
+            background-color: #2c2c2c;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.5);
+            width: 100%;
+            max-width: 400px;
+            text-align: center;
+        }
+
+        h1 {
+            color: #b36bff;
+        }
+
+        .input-text {
+            width: 100%;
+            padding: 10px;
+            margin: 10px 0;
+            border: 1px solid #4a4a4a;
+            border-radius: 5px;
+            background-color: #1a1a1a;
+            color: #e0e0e0;
+        }
+
+        .input-text:focus {
+            border-color: #b36bff;
+            outline: none;
+        }
+
+        .botao-redirecionamento {
+            width: 100%;
+            padding: 10px;
+            margin: 10px 0;
+            background-color: #b36bff;
+            color: #fff;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        .botao-redirecionamento:hover {
+            background-color: #a85bf0;
+        }
+
+        #divResposta {
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Cadastro de Escola</h1>
+        <div>
+            <input type="text" id="txtNomeEscola" class="input-text" placeholder="Nome da Escola">
+        </div>
+        <div>
+            <input type="email" id="txtemailcoEscola" class="input-text" placeholder="Email">
+        </div>
+        <div>
+            <button class="botao-redirecionamento" id="btnCadastrarEscola">Cadastrar Escola</button>
+        </div>
+        <div id="divResposta"></div>
+    </div>
+
+    <script>
+        const btnCadastrarEscola = document.getElementById('btnCadastrarEscola');
+        const txtNomeEscola = document.getElementById('txtNomeEscola');
+        const txtemailcoEscola = document.getElementById('txtemailcoEscola');
+        const divResposta = document.getElementById('divResposta');
+
+        btnCadastrarEscola.onclick = function () {
+            cadastrarEscola();
+        }
+
+        function cadastrarEscola() {
+            const nome = txtNomeEscola.value;
+            const email = txtemailcoEscola.value;
+
+            const obj_json = {
+                Escola: {
+                    nomeEscola: nome,
+                    email: email
+                }
+            };
+
+            const uri = '/Escola';  // Endpoint correto da API
+            fetch(uri, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "Authorization": "Bearer " + localStorage.getItem("token")
+                },
+                body: JSON.stringify(obj_json)
+            }).then((resposta_backEnd) => {
+                if (resposta_backEnd.headers.get("content-type")?.includes("application/json")) {
+                    return resposta_backEnd.json();  // Retorna o JSON processado
+                } else {
+                    return resposta_backEnd.text();  // Retorna texto
+                }
+            }).then((resultado) => {
+                if (typeof resultado === "string") {
+                    divResposta.textContent = resultado;  // Exibe texto se não for JSON
+                } else {
+                    processarResultados(resultado);  // Processa o JSON
+                }
+            }).catch((error) => {
+                console.log(error);
+            });
+        }
+
+        function processarResultados(obj_json) {
+            if (obj_json.status === false) {
+                divResposta.textContent = "Email ou Escola inválidos: " + obj_json.msg;
+            } else {
+                alert("Escola cadastrada com sucesso!");
+                localStorage.setItem("dados", JSON.stringify(obj_json));
+                window.location.href = 'painel.html';
+            }
+        }
+    </script>
+</body>
+</html>

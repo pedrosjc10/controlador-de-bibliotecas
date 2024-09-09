@@ -1,70 +1,106 @@
 <?php
-require_once("modelo/Router.php");
+    // Inclui o arquivo Router.php, que provavelmente contém a definição da classe Router
+    require_once ("modelo/Router.php");
 
-$roteador = new Router();
+    // Instancia um objeto da classe Router
+    $roteador = new Router();
 
-$roteador -> get("/usuarios", function(){
-    require_once ("controle/usuarios/controle-usuarios-read-all.php");
-});
+    //-------------------------TURMAS----------------------------
 
-$roteador -> get("/usuarios/(\d+)", function($idUsuario){
-    require_once("controle/moeda/controle-moeda-read-by-ISO.php");
-    
-});
+    // Define uma rota para a obtenção de todos as turmas 
+    $roteador->get("/turmas", function () {
+        // Requer o arquivo de controle responsável por obter todos os turmas
+        require_once ("controle/turma/controle_turma_read_all.php");
+    }); 
 
-$roteador -> put("/usuarios/(\d+)", function($idUsuario){
-    require_once("controle/usuarios/controle-usuarios-update.php");
-});
+    // Define uma rota para a obtenção de um turma específico pelo ID
+    $roteador->get("/turmas/(\d+)", function ($idTurma) {
+        // Requer o arquivo de controle responsável por obter um turma pelo ID
+        require_once ("controle/turma/controle_turma_read_by_id.php");
+    });
 
-$roteador -> delete("/usuarios/(\d+)", function($idUsuario){
-    require_once("controle/usuarios/controle-usuarios-delete.php");
-});
-$roteador -> post("/usuarios", function(){
-    require_once("controle/usuarios/controle-usuarios-create.php");
-}); 
+    // Define uma rota para a criação de uma nova turma
+    $roteador->post("/turmas", function () {
+        // Requer o arquivo de controle responsável por criar uma nova turma
+        require_once ("controle/turma/controle_turma_create.php");
+    });
 
-//Moeda
+    // Define uma rota para a atualização de um turma existente pelo ID
+    $roteador->put("/turmas/(\d+)", function ($idTurma) {
+        // Requer o arquivo de controle responsável por atualizar um turma pelo ID
+        require_once ("controle/turma/controle_turma_update.php");
+    });
 
-$roteador -> get("/moeda", function(){
-    require_once ("controle/moeda/controle-moeda-read-all.php");
-});
+    // Define uma rota para a exclusão de um turma existente pelo ID
+    $roteador->delete("/turmas/(\d+)", function ($idTurma) {
+        // Requer o arquivo de controle responsável por excluir um turma pelo ID
+        require_once ("controle/turma/controle_turma_delete.php");
+    });
 
-$roteador -> get("/moeda/(\d+)", function($idMoeda){
-    require_once("controle/moeda/controle-moeda-read-by-ISO.php");
-    
-});
+    //-------------------------PROFESSORES----------------------------
 
-$roteador -> put("/moeda/(\d+)", function($idMoeda){
-    require_once("controle/moeda/controle-moeda-update.php");
-});
+     // Define uma rota para a obtenção de todos os professores 
+     $roteador->get("/professor", function () {
+        // Requer o arquivo de controle responsável por obter todos os turmas
+        require_once ("controle/professor/controle_professor_read_all.php");
+    }); 
 
-$roteador -> delete("/moeda/(\d+)", function($idMoeda){
-    require_once("controle/moeda/controle-moeda-delete.php");
-});
-$roteador -> post("/moeda", function(){
-    require_once("controle/moeda/controle-moeda-create.php");
-});
+    // Define uma rota para a obtenção de um turma específico pelo ID
+    $roteador->get("/professor/(\d+)", function ($idProfessor) {
+        // Requer o arquivo de controle responsável por obter um turma pelo ID
+        require_once ("controle/professor/controle_professor_read_by_id.php");
+    });
 
-//Transações
+    // Define uma rota para a criação de um novo professor
+    $roteador->post("/professor", function () {
+        // Requer o arquivo de controle responsável por criar uma nova turma
+        require_once ("controle/professor/controle_professor_create.php");
+    });
 
-$roteador -> get("/transações", function(){
-    require_once ("controle/transações/controle-transações-read-all.php");
-});
+    // Define uma rota para a atualização de um professor existente pelo ID
+    $roteador->put("/professor/(\d+)", function ($idProfessor) {
+        // Requer o arquivo de controle responsável por atualizar um turma pelo ID
+        require_once ("controle/professor/controle_professor_update.php");
+    });
 
-$roteador -> get("/transações/(\d+)", function($idtrandação){
-    require_once("controle/transações/controle-transações-read-by-id.php");
-    
-});
+    // Define uma rota para a exclusão de um professor existente pelo ID
+    $roteador->delete("/professor/(\d+)", function ($idProfessor) {
+        // Requer o arquivo de controle responsável por excluir um turma pelo ID
+        require_once ("controle/professor/controle_professor_delete.php");
+    });
 
-$roteador -> put("/transações/(\d+)", function($idtransação){
-    require_once("controle/transações/controle-transações-update.php");
-});
+    //-------------------------Escola----------------------------
 
-$roteador -> delete("/transações/(\d+)", function($idtransação){
-    require_once("controle/transações/controle-transações-delete.php");
-});
-$roteador -> post("/transações", function(){
-    require_once("controle/transações/controle-transações-create.php");
-});
+    // Define uma rota para a obtenção de todas as Escola
+    $roteador->get("/Escola", function () {
+        // Requer o arquivo de controle responsável por obter todos as Escola
+        require_once ("controle/escola/controle_escola_read_all.php");
+    });
 
-$roteador->run();
+    // Define uma rota para a obtenção de uma escola específico pelo ID
+    $roteador->get("/Escola/(\d+)", function ($idEscola) {
+        // Requer o arquivo de controle responsável por obter uma escola pelo ID
+        require_once ("controle/escola/controle_escola_read_by_id.php");
+    });
+
+    // Define uma rota para a criação de uma nova escola
+    $roteador->post("/Escola", function () {
+        // Requer o arquivo de controle responsável por criar uma nova escola
+        require_once ("controle/escola/controle_escola_create.php");
+    });
+
+    // Define uma rota para a atualização de uma escola existente pelo ID
+    $roteador->put("/Escola/(\d+)", function ($idEscola) {
+        // Requer o arquivo de controle responsável por atualizar uma escola pelo ID
+        require_once ("controle/escola/controle_escola_update.php");
+    });
+
+    // Define uma rota para a exclusão de uma escola existente pelo ID
+    $roteador->delete("/Escola/(\d+)", function ($idEscola) {
+        // Requer o arquivo de controle responsável por excluir uma escola pelo ID
+        require_once ("controle/escola/controle_escola_delete.php");
+    });
+
+    // Executa o roteador para lidar com as requisições
+    $roteador->run();
+?>

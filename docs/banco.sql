@@ -1,3 +1,4 @@
+
 -- MySQL Workbench Forward Engineering
 
 SET @OLD_UNIQUE_CHECKS=@@UNIQUE_CHECKS, UNIQUE_CHECKS=0;
@@ -5,65 +6,72 @@ SET @OLD_FOREIGN_KEY_CHECKS=@@FOREIGN_KEY_CHECKS, FOREIGN_KEY_CHECKS=0;
 SET @OLD_SQL_MODE=@@SQL_MODE, SQL_MODE='ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION';
 
 -- -----------------------------------------------------
--- Schema arraso
+-- Schema mydb
+-- -----------------------------------------------------
+-- -----------------------------------------------------
+-- Schema projeto
 -- -----------------------------------------------------
 
 -- -----------------------------------------------------
--- Schema arraso
+-- Schema projeto
 -- -----------------------------------------------------
-CREATE SCHEMA IF NOT EXISTS `arraso` DEFAULT CHARACTER SET utf8 ;
-USE `arraso` ;
+CREATE SCHEMA IF NOT EXISTS `projeto` DEFAULT CHARACTER SET utf8mb4 ;
+USE `projeto` ;
 
 -- -----------------------------------------------------
--- Table `arraso`.`transacoes`
+-- Table `projeto`.`Escola`
 -- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `arraso`.`transacoes` (
-  `idtransacoes` INT NOT NULL AUTO_INCREMENT,
-  `moedaOrig` VARCHAR(45) NOT NULL,
-  `qtdmoedaOrig` VARCHAR(45) NOT NULL,
-  `qtdConv` FLOAT NOT NULL,
-  `usuarios_idusuarios` INT NOT NULL,
-  PRIMARY KEY (`idtransacoes`))
-ENGINE = InnoDB;
-
-
--- -----------------------------------------------------
--- Table `arraso`.`moedas`
--- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `arraso`.`moedas` (
-  `idmoedas` INT NOT NULL AUTO_INCREMENT,
-  `taxaConv` FLOAT NOT NULL,
-  `codigoISO` VARCHAR(3) NOT NULL,
-  PRIMARY KEY (`idmoedas`))
-ENGINE = InnoDB;
+CREATE TABLE IF NOT EXISTS `projeto`.`Escola` (
+  `idEscola` INT(11) UNSIGNED NOT NULL AUTO_INCREMENT,
+  `email` VARCHAR(255) NOT NULL,
+  `nomeEscola` VARCHAR(255) NOT NULL,
+  PRIMARY KEY (`idEscola`),
+  UNIQUE INDEX `id_escola_UNIQUE` (`idEscola` ASC))
+ENGINE = InnoDB
+DEFAULT CHARACTER SET = utf8mb4;
 
 
 -- -----------------------------------------------------
--- Table `arraso`.`usuarios`
+-- Table `projeto`.`professores`i
 -- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `arraso`.`usuarios` (
-  `idusuarios` INT NOT NULL AUTO_INCREMENT,
-  `nome` VARCHAR(45) NOT NULL,
-  `moedaPref` VARCHAR(3) NOT NULL,
-  `senha` VARCHAR(45) NOT NULL,
-  `email` VARCHAR(45) NOT NULL,
-  `transacoes_idtransacoes` INT NOT NULL,
-  `moedas_idmoedas` INT NOT NULL,
-  PRIMARY KEY (`idusuarios`),
-  UNIQUE INDEX `idusuarios_UNIQUE` (`idusuarios` ASC) ,
-  INDEX `fk_usuarios_transacoes_idx` (`transacoes_idtransacoes` ASC) ,
-  INDEX `fk_usuarios_moedas1_idx` (`moedas_idmoedas` ASC) ,
-  CONSTRAINT `fk_usuarios_transacoes`
-    FOREIGN KEY (`transacoes_idtransacoes`)
-    REFERENCES `arraso`.`transacoes` (`idtransacoes`)
-    ON DELETE NO ACTION
-    ON UPDATE NO ACTION,
-  CONSTRAINT `fk_usuarios_moedas1`
-    FOREIGN KEY (`moedas_idmoedas`)
-    REFERENCES `arraso`.`moedas` (`idmoedas`)
+CREATE TABLE IF NOT EXISTS `projeto`.`professores` (
+  `idProfessor` INT(11) UNSIGNED NOT NULL AUTO_INCREMENT,
+  `nomeProfessor` VARCHAR(255) NOT NULL,
+  `telProfessor` VARCHAR(15) NOT NULL,
+  `cpfProfessor` VARCHAR(14) NOT NULL,
+  `especialProfessor` VARCHAR(255) NOT NULL,
+  `Escola_idEscola` INT(11) UNSIGNED NOT NULL,
+  PRIMARY KEY (`idProfessor`),
+  UNIQUE INDEX `id_prof_UNIQUE` (`idProfessor` ASC),
+  INDEX `fk_professores_Escola1_idx` (`Escola_idEscola` ASC),
+  CONSTRAINT `fk_professores_Escola1`
+    FOREIGN KEY (`Escola_idEscola`)
+    REFERENCES `projeto`.`Escola` (`idEscola`)
     ON DELETE NO ACTION
     ON UPDATE NO ACTION)
-ENGINE = InnoDB;
+ENGINE = InnoDB
+DEFAULT CHARACTER SET = utf8mb4;
+
+
+-- -----------------------------------------------------
+-- Table `projeto`.`turmas`
+-- -----------------------------------------------------
+CREATE TABLE IF NOT EXISTS `projeto`.`turmas` (
+  `idTurma` INT(11) UNSIGNED NOT NULL AUTO_INCREMENT,
+  `série` VARCHAR(64) NOT NULL,
+  `quantiaAlunos` INT(3) NOT NULL,
+  `cursoTécnico` VARCHAR(64) NOT NULL,
+  `professores_idProf` INT(11) UNSIGNED NOT NULL,
+  PRIMARY KEY (`idTurma`),
+  UNIQUE INDEX `id_turma_UNIQUE` (`idTurma` ASC),
+  INDEX `fk_turmas_professores_idx` (`professores_idProf` ASC),
+  CONSTRAINT `fk_turmas_professores`
+    FOREIGN KEY (`professores_idProf`)
+    REFERENCES `projeto`.`professores` (`idProfessor`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION)
+ENGINE = InnoDB
+DEFAULT CHARACTER SET = utf8mb4;
 
 
 SET SQL_MODE=@OLD_SQL_MODE;
