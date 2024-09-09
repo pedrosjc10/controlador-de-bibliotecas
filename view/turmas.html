@@ -1,0 +1,370 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cadastro de Turmas</title>
+    <style>
+        /* Aplicando modo escuro com detalhes em roxo */
+        body {
+            background-color: #1e1e1e;
+            color: #ffffff;
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+        }
+
+        /* Estilizando o container principal */
+        .container {
+            background-color: #2e2e2e;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            width: 80%;
+            max-width: 600px;
+        }
+
+        /* Estilizando os rótulos e campos de entrada */
+        div {
+            margin-bottom: 15px;
+        }
+
+        label {
+            display: block;
+            color: #a020f0;
+            margin-bottom: 5px;
+            font-size: 1.2em;
+        }
+
+        input[type="text"], 
+        input[type="number"] {
+            width: calc(100% - 20px);
+            padding: 10px;
+            border: 2px solid #a020f0;
+            border-radius: 5px;
+            background-color: #3e3e3e;
+            color: #ffffff;
+            font-size: 1em;
+        }
+
+        input[type="text"]:focus, 
+        input[type="number"]:focus {
+            outline: none;
+            border-color: #ffffff;
+        }
+
+        button {
+            background-color: #a020f0;
+            color: #ffffff;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            font-size: 1em;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        button:hover {
+            background-color: #8c1de0;
+        }
+
+        /* Estilizando a tabela */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        th, td {
+            padding: 10px;
+            text-align: left;
+            border: 1px solid #a020f0;
+        }
+
+        th {
+            background-color: #3e3e3e;
+            color: #a020f0;
+        }
+
+        td button {
+            background-color: #a020f0;
+            color: #ffffff;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        td button:hover {
+            background-color: #8c1de0;
+        }
+
+        /* Estilizando o filtro de pesquisa */
+        #txtFiltro {
+            width: calc(100% - 22px);
+            padding: 10px;
+            border: 2px solid #a020f0;
+            border-radius: 5px;
+            background-color: #3e3e3e;
+            color: #ffffff;
+            font-size: 1em;
+        }
+
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <div>
+            <label for="txtSerieTurma">Série da Turma:</label>
+            <input type="text" id="txtSerieTurma">
+        </div>
+        <div>
+            <label for="txtQtdAlunos">Quantidade de Alunos:</label>
+            <input type="number" id="txtQtdAlunos">
+        </div>
+        <div>
+            <label for="txtCursoTecnico">Curso Técnico:</label>
+            <input type="text" id="txtCursoTecnico">
+        </div>
+        <div>
+            <label for="txtFiltro">Filtro:</label>
+            <input type="text" id="txtFiltro">
+        </div>
+        <div>
+            <button id="btnCadastrar">Cadastrar Turma</button>
+        </div>
+        <div id="divDados"></div>
+    </div>
+
+    <script>
+        let JSON_TURMAS = {};
+        const dadosLocalStorage = localStorage.getItem("dados");
+        const objUsuario = JSON.parse(dadosLocalStorage);
+
+        const divDados = document.getElementById("divDados");
+        const txtSerieTurma = document.getElementById("txtSerieTurma");
+        const txtQtdAlunos = document.getElementById("txtQtdAlunos");
+        const txtCursoTecnico = document.getElementById("txtCursoTecnico");
+        const txtFiltro = document.getElementById("txtFiltro");
+
+        txtFiltro.onkeyup = function () {
+            construirTabela(JSON_TURMAS, txtFiltro.value);
+        };
+
+        const btnCadastrar = document.getElementById("btnCadastrar");
+
+        const tabela = document.createElement("table");
+        divDados.appendChild(tabela);
+
+        // Cabeçalho da tabela
+        const linha1 = document.createElement("tr");
+        const th0 = document.createElement("th");
+        const th1 = document.createElement("th");
+        const th2 = document.createElement("th");
+        const th3 = document.createElement("th");
+        const th4 = document.createElement("th");
+        const th5 = document.createElement("th");
+
+        th0.appendChild(document.createTextNode("ID"));
+        th1.appendChild(document.createTextNode("Série"));
+        th2.appendChild(document.createTextNode("Qtd. Alunos"));
+        th3.appendChild(document.createTextNode("Curso Técnico"));
+        th4.appendChild(document.createTextNode("Excluir"));
+        th5.appendChild(document.createTextNode("Atualizar"));
+
+        linha1.appendChild(th0);
+        linha1.appendChild(th1);
+        linha1.appendChild(th2);
+        linha1.appendChild(th3);
+        linha1.appendChild(th4);
+        linha1.appendChild(th5);
+        tabela.appendChild(linha1);
+
+        get_turmas();
+
+        btnCadastrar.onclick = function () {
+            post_turmas();
+        };
+
+        function limparTabela() {
+            const totalLinhas = tabela.rows.length;
+            for (let i = 1; i < totalLinhas; i++) {
+                tabela.deleteRow(1);
+            }
+        }
+
+        function delete_turma(idTurma) {
+            const URI = "/turmas/" + idTurma;
+            fetch(URI, {
+                method: "DELETE",
+                headers: {
+                    'Authorization': 'Bearer ' + objUsuario.token
+                }
+            }).then((resposta) => resposta.text())
+            .then(() => get_turmas())
+            .catch(erro => console.log(erro));
+        }
+
+        function construirTabela(objJson, filtro) {
+            limparTabela();
+            const turmas = objJson.turmas;
+
+            for (let turma of turmas) {
+                let serie = turma.serie.toLowerCase();
+                filtro = filtro.toLowerCase();
+
+                if (!serie.includes(filtro)) {
+                    continue;
+                }
+
+                const linha = document.createElement("tr");
+                const btnExcluir = document.createElement("button");
+                btnExcluir.appendChild(document.createTextNode("Excluir"));
+                btnExcluir.onclick = function () {
+                    delete_turma(turma.idTurma);
+                };
+
+                const txtSerie = document.createElement("input");
+                txtSerie.type = 'text';
+                txtSerie.value = turma.serie;
+                txtSerie.disabled = true;
+
+                const txtQtdAlunos = document.createElement("input");
+                txtQtdAlunos.type = 'number';
+                txtQtdAlunos.value = turma.qtdAlunos;
+                txtQtdAlunos.disabled = true;
+
+                const txtCursoTecnico = document.createElement("input");
+                txtCursoTecnico.type = 'text';
+                txtCursoTecnico.value = turma.cursoTecnico;
+                txtCursoTecnico.disabled = true;
+
+                const btnAtualizar = document.createElement("button");
+                btnAtualizar.appendChild(document.createTextNode("Atualizar"));
+                btnAtualizar.onclick = function () {
+                    txtSerie.disabled = false;
+                    txtQtdAlunos.disabled = false;
+                    txtCursoTecnico.disabled = false;
+
+                    btnAtualizar.textContent = "Salvar";
+                    btnAtualizar.onclick = function () {
+                        const serie = txtSerie.value;
+                        const qtdAlunos = txtQtdAlunos.value;
+                        const cursoTecnico = txtCursoTecnico.value;
+
+                        put_turmas(turma.idTurma, serie, qtdAlunos, cursoTecnico);
+                        txtSerie.disabled = true;
+                        txtQtdAlunos.disabled = true;
+                        txtCursoTecnico.disabled = true;
+                        btnAtualizar.textContent = "Atualizar";
+                    };
+                };
+
+                const td0 = document.createElement("td");
+                const td1 = document.createElement("td");
+                const td2 = document.createElement("td");
+                const td3 = document.createElement("td");
+                const td4 = document.createElement("td");
+                const td5 = document.createElement("td");
+
+                td0.appendChild(document.createTextNode(turma.idTurma));
+                td1.appendChild(txtSerie);
+                td2.appendChild(txtQtdAlunos);
+                td3.appendChild(txtCursoTecnico);
+                td4.appendChild(btnExcluir);
+                td5.appendChild(btnAtualizar);
+
+                linha.appendChild(td0);
+                linha.appendChild(td1);
+                linha.appendChild(td2);
+                linha.appendChild(td3);
+                linha.appendChild(td4);
+                linha.appendChild(td5);
+                tabela.appendChild(linha);
+            }
+        }
+
+        function get_turmas() {
+            const URI = "/turmas";
+
+            fetch(URI, {
+                method: "GET",
+                headers: {
+                    'Accept': 'application/json',
+                    'Content-Type': 'application/json',
+                    'Authorization': 'Bearer ' + objUsuario.token
+                }
+            }).then((resposta) => resposta.text())
+            .then(respostaConvertida => {
+                JSON_TURMAS = JSON.parse(respostaConvertida);
+                construirTabela(JSON_TURMAS, '');
+            }).catch(erro => console.log(erro));
+        }
+
+        function post_turmas() {
+            const URI = "/turmas";
+            const serie = txtSerieTurma.value;
+            const qtdAlunos = txtQtdAlunos.value;
+            const cursoTecnico = txtCursoTecnico.value;
+
+            if (!serie || !qtdAlunos || !cursoTecnico) {
+                alert("Todos os campos devem ser preenchidos!");
+                return;
+            }
+
+            const objTurma = {
+                turma: {
+                    serie: serie,
+                    qtdAlunos: qtdAlunos,
+                    cursoTecnico: cursoTecnico
+                }
+            };
+
+            fetch(URI, {
+                method: "POST",
+                body: JSON.stringify(objTurma),
+                headers: {
+                    'Accept': 'application/json',
+                    'Content-Type': 'application/json',
+                    'Authorization': 'Bearer ' + objUsuario.token
+                }
+            }).then((resposta) => resposta.text())
+            .then(() => get_turmas())
+            .catch(erro => console.log(erro));
+        }
+
+        function put_turmas(idTurma, serie, qtdAlunos, cursoTecnico) {
+            const URI = "/turmas/" + idTurma;
+
+            const objTurma = {
+                turma: {
+                    serie: serie,
+                    qtdAlunos: qtdAlunos,
+                    cursoTecnico: cursoTecnico
+                }
+            };
+
+            fetch(URI, {
+                method: "PUT",
+                body: JSON.stringify(objTurma),
+                headers: {
+                    'Accept': 'application/json',
+                    'Content-Type': 'application/json',
+                    'Authorization': 'Bearer ' + objUsuario.token
+                }
+            }).then((resposta) => resposta.text())
+            .then(() => get_turmas())
+            .catch(erro => console.log(erro));
+        }
+    </script>
+</body>
+
+</html>
