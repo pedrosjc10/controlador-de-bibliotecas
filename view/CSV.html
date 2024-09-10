@@ -4,133 +4,80 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Enviar CSV</title>
-    <style>
-        /* Aplicando modo escuro com detalhes em roxo */
-        body {
-            background-color: #1e1e1e;
-            color: #ffffff;
-            font-family: Arial, sans-serif;
-            margin: 0;
-            padding: 0;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            height: 100vh;
-        }
-
-        .container {
-            background-color: #2e2e2e;
-            border-radius: 10px;
-            padding: 20px;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-            text-align: center;
-            width: 300px;
-        }
-
-        /* Estilo do campo de arquivo */
-        .file-input-wrapper {
-            position: relative;
-            overflow: hidden;
-            display: inline-block;
-            width: 100%;
-        }
-
-        input[type="file"] {
-            font-size: 1em;
-            color: #ffffff;
-            background-color: #3e3e3e;
-            border: 2px solid #a020f0;
-            border-radius: 5px;
-            padding: 10px;
-            width: 100%;
-            cursor: pointer;
-            opacity: 0; /* Esconde o botão real */
-            position: absolute;
-            top: 0;
-            left: 0;
-            height: 100%;
-        }
-
-        .file-input-button {
-            font-size: 1em;
-            color: #ffffff;
-            background-color: #a020f0;
-            border: 2px solid #a020f0;
-            border-radius: 5px;
-            padding: 10px 20px;
-            cursor: pointer;
-            transition: background-color 0.3s;
-            display: inline-block;
-            width: 100%;
-            text-align: center;
-        }
-
-        .file-input-button:hover {
-            background-color: #8c1de0;
-            border-color: #8c1de0;
-        }
-
-        button {
-            background-color: #a020f0;
-            color: #ffffff;
-            border: none;
-            padding: 10px 20px;
-            border-radius: 5px;
-            font-size: 1em;
-            cursor: pointer;
-            transition: background-color 0.3s;
-            display: inline-block;
-            width: 100%;
-        }
-
-        button:hover {
-            background-color: #8c1de0;
-        }
-    </style>
+    <title>Gerenciar Entidades</title>
+    <link rel="stylesheet" href="styles.css">
 </head>
-
 <body>
     <div class="container">
-        <div class="file-input-wrapper">
-            <input type="file" id="txtArquivo">
-            <label for="txtArquivo" class="file-input-button">Escolher Arquivo</label>
+        <!-- Botão de Voltar -->
+        <a href="index.html" id="btnVoltar" class="btn-back">Voltar</a>
+
+        <!-- Seção para listar entidades -->
+        <div class="filter-section">
+            <select id="entityType">
+                <option value="escola">Escola</option>
+                <option value="turma">Turma</option>
+                <option value="professor">Professor</option>
+            </select>
+            <button id="btnListar">Listar Entidades</button>
+            <ul id="entidadesList"></ul>
         </div>
-        <button id="btnEnviar">Enviar CSV</button>
     </div>
 
     <script>
         const dadosLocalStorage = localStorage.getItem("dados");
         const objUsuario = JSON.parse(dadosLocalStorage);
 
-        const txtArquivo = document.getElementById('txtArquivo');
-        const btnEnviar = document.getElementById('btnEnviar');
+        const entityType = document.getElementById('entityType');
+        const btnListar = document.getElementById('btnListar');
+        const entidadesList = document.getElementById('entidadesList');
 
-        btnEnviar.onclick = function () {
-            const dados = new FormData();
-            dados.append('variavelArquivo', txtArquivo.files[0]);
+        // Função para listar entidades com base no tipo
+        async function listarEntidades(tipo) {
+            let URI;
+            switch (tipo) {
+                case 'escola':
+                    URI = 'http://localhost/escola';
+                    break;
+                case 'turma':
+                    URI = 'http://localhost/turmas';
+                    break;
+                case 'professor':
+                    URI = 'http://localhost/professor';
+                    break;
+                default:
+                    console.error('Tipo de entidade inválido');
+                    return;
+            }
 
-            const URI = "/turmas/csv/";
-            fetch(URI, {
-                method: "POST",
-                body: dados,
-                headers: {
-                    'Authorization': 'Bearer ' + objUsuario.token
-                }        
-            }).then((resposta) => {
-                return resposta.text();
-            }).then(respostaConvertida => {
-                console.log(respostaConvertida);
-                const resposta = JSON.parse(respostaConvertida);
-                if (resposta.status === true) {
-                    alert("Turmas cadastradas com sucesso");
+            try {
+                const resposta = await fetch(URI, {
+                    method: "GET",
+                    headers: {
+                        'Authorization': 'Bearer ' + objUsuario.token
+                    }
+                });
+                const dados = await resposta.json();
+                entidadesList.innerHTML = ''; // Limpa qualquer conteúdo anterior
+                if (Array.isArray(dados) && dados.length > 0) {
+                    dados.forEach(entidade => {
+                        const li = document.createElement('li');
+                        li.textContent = entidade.nome; // Ajuste conforme a estrutura de dados
+                        entidadesList.appendChild(li);
+                    });
                 } else {
-                    alert("Erro ao cadastrar turmas: " + resposta.msg);
+                    entidadesList.innerHTML = '<li>Nenhuma entidade encontrada.</li>';
                 }
-            }).catch(erro => {
-                console.log(erro);
-            })
+            } catch (erro) {
+                console.error('Erro ao listar entidades:', erro);
+            }
         }
+
+        // Evento para listar entidades com base no tipo selecionado
+        btnListar.onclick = function() {
+            const tipo = entityType.value;
+            listarEntidades(tipo);
+        };
     </script>
 </body>
 
