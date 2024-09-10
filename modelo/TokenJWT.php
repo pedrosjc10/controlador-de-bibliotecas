@@ -17,7 +17,7 @@ require_once "jwt/SignatureInvalidException.php";
 
 require_once "jwt/ExpiredException.php";
 
-class MeuTokenJWT
+class TokenJWT
 {
     //chave de criptografia, defina uma chave forte e a mantenha segura.
     private $key = "x9S4q0v+V0IjvHkG20uAxaHx1ijj+q1HWjHKv+ohxp/oK+77qyXkVj/l4QYHHTF3";

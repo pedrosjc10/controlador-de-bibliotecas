@@ -1,8 +1,8 @@
 <?php
 
-use Firebase\JWT\MeuTokenJWT;
+use Firebase\JWT\TokenJWT;
 require_once ("modelo/Escola.php");
-require_once("modelo/MeuTokenJWT.php");
+require_once("modelo/TokenJWT.php");
 
 $textoRecebido = file_get_contents("php://input");
 $objJson = json_decode($textoRecebido) or die('{"msg" : "formato incorreto"}');
@@ -31,7 +31,7 @@ if ($objEscola->getemailEscola() == "") {
     $objResposta->msg = "a senha deve ter mais do que 3 caracteres.";
 }else {
     if ($objEscola->login() == true) {
-        $tokenJWT = new MeuTokenJWT();
+        $tokenJWT = new TokenJWT();
 
         $objClaimsToken = new stdClass();
         $objClaimsToken->idEscola = $objEscola->getidEscola();

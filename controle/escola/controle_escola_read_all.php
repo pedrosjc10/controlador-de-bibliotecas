@@ -1,11 +1,11 @@
 <?php
 
-use Firebase\JWT\MeuTokenJWT;
+use Firebase\JWT\TokenJWT;
 
 // Inclui as classes Banco e Escola, que contêm funcionalidades relacionadas ao banco de dados e as Escola
 require_once ("modelo/Banco.php");
 require_once ("modelo/Escola.php");
-require_once("modelo/MeuTokenJWT.php");
+require_once("modelo/TokenJWT.php");
 
 // Cria um novo objeto para armazenar a resposta
 $objResposta = new stdClass();
@@ -13,7 +13,7 @@ $objResposta = new stdClass();
 $headers = getallheaders();
 $authorization = $headers['Authorization'];
 
-$meuToken = new MeuTokenJWT();
+$meuToken = new TokenJWT();
 if($meuToken -> validarToken($authorization) == true){
     $payloadRecuperado = $meuToken -> getPayload();
 // Cria um novo objeto da classe Escola

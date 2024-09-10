@@ -1,8 +1,8 @@
 <?php
 
-use Firebase\JWT\MeuTokenJWT;
+use Firebase\JWT\TokenJWT;
 
-require_once ("modelo/MeuTokenJWT.php");
+require_once ("modelo/TokenJWT.php");
 // Inclui as classes Banco e Turma, que contêm funcionalidades relacionadas ao banco de dados e as turmas
 require_once ("modelo/Banco.php");
 require_once ("modelo/Turma.php");
@@ -13,7 +13,7 @@ $objResposta = new stdClass();
 $headers = getallheaders();
 $authorization = $headers['Authorization'];
 
-$meuToken = new MeuTokenJWT();
+$meuToken = new TokenJWT();
 if($meuToken -> validarToken($authorization) == true){
     $payloadRecuperado = $meuToken -> getPayload();
 

@@ -1,7 +1,7 @@
 <?php
-use Firebase\JWT\MeuTokenJWT;
+use Firebase\JWT\TokenJWT;
 
-require_once ("modelo/MeuTokenJWT.php");
+require_once ("modelo/TokenJWT.php");
 // Inclui as classes Banco e Professor, que contêm funcionalidades relacionadas ao banco de dados e aos professores
 require_once ("modelo/Banco.php");
 require_once ("modelo/Professor.php");
@@ -11,7 +11,7 @@ $objResposta = new stdClass();
 $headers = getallheaders();
 $authorization = $headers['Authorization'];
 
-$meuToken = new MeuTokenJWT();
+$meuToken = new TokenJWT();
 if($meuToken -> validarToken($authorization) == true){
     $payloadRecuperado = $meuToken -> getPayload();
 // Cria um novo objeto da classe profesor
